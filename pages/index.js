@@ -1,5 +1,6 @@
 import { Contract, providers, utils } from "ethers";
 import Head from "next/head";
+// import { useLocation } from "react-router-dom";
 import React, { useEffect, useRef, useState } from "react";
 // import Axios from "axios";
 import Web3Modal from "web3modal";
@@ -17,10 +18,20 @@ export default function Home() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tokenIdsMinted, setTokenIdsMinted] = useState("0");
+  const [eId, setEId] = useState("");
+  const [eventId, setEventId] = useState("");
   let contractAddr = "";
   let contractABI = "";
-  let celebNameEvent = "Gardening";
-  let celebName = "Pokemon";
+  let celebNameEvent = "";
+  let celebName = "";
+  let eventError = false;
+  let showContentBody = false;
+
+  // const search = useLocation().search;
+  // const wallet = new URLSearchParams(search).get("wallet");
+  // const EventID = new URLSearchParams(search).get("EventID");
+  // console.log(wallet);
+  // console.log(EventID);
 
   // // Extra
   // const [movieName, setMovieName] = useState("");
@@ -48,22 +59,29 @@ export default function Home() {
 
   // Set NFT_addr, NFT_ABI by accessing data from SQL
   // use useEffect, fetch data from sql and then take decision
-  let condition = true;
-  if (condition) {
+  if (eventId == "EV1278") {
     // VK NFT
     contractAddr = VK_NFT;
     contractABI = VK_NFT_ABI;
-  } else if (condition) {
+    celebNameEvent = "Video Call with VK";
+    celebName = "Virat Kohli";
+    showContentBody = true;
+  } else if (eventId == "EV123") {
     // PVS NFT
     contractAddr = PVS_NFT;
     contractABI = PVS_NFT_ABI;
-  } else if (condition) {
+    celebNameEvent = "Video Call with Sindhu";
+    celebName = "PV Sindhu";
+    showContentBody = true;
+  } else if (eventId == "EV721") {
     // Messi NFT
     contractAddr = MESSI_NFT;
     contractABI = MESSI_NFT_ABI;
+    celebNameEvent = "Video Call with Messi";
+    celebName = "L Messi";
+    showContentBody = true;
   } else {
-    contractAddr = "";
-    contractABI = "";
+    eventError = true;
   }
 
   const web3ModalRef = useRef();
@@ -141,6 +159,77 @@ export default function Home() {
     }
   }, [walletConnected]);
 
+  const contentForm = () => {
+    if (eventId == "") {
+      return (
+        <div className={styles.form}>
+          <form onSubmit={handleSubmit}>
+            <label>
+              Enter the EventID:
+              <input
+                type="text"
+                value={eId}
+                onChange={(e) => setEId(e.target.value)}
+              />
+            </label>
+            <input type="submit" />
+          </form>
+        </div>
+      );
+    }
+  };
+
+  const contentBody = () => {
+    if (showContentBody) {
+      return (
+        <div>
+          <nav className={styles.navMenu}>
+            <div className={styles.navTitle}>{celebNameEvent}</div>
+          </nav>
+
+          <div className={styles.main}>
+            <div>
+              <h1 className={styles.title}>
+                Welcome to {celebNameEvent} NFT collection!
+              </h1>
+              <div className={styles.description}>
+                Congratulations!! you have successfully completed the tasks, so
+                as for the reward you get to mint this NFT and enjoy the
+                benifits
+              </div>
+              <div className={styles.description}>
+                {tokenIdsMinted} people have been minted this NFT so far!!
+              </div>
+              {renderButton()}
+            </div>
+            {/* <div>
+          <img className={styles.image} src="./LW3punks/1.png" />
+        </div> */}
+          </div>
+        </div>
+      );
+    }
+  };
+
+  const contentErrorBody = () => {
+    if (eventError && eventId) {
+      return (
+        <div>
+          <div className={styles.main}>
+            <div>
+              <div className={styles.description}>
+                Sorry!! This event doesnot exist.
+              </div>
+            </div>
+            {/* <div>
+          <img className={styles.image} src="./LW3punks/1.png" />
+        </div> */}
+          </div>
+        </div>
+      );
+    }
+  };
+
   const renderButton = () => {
     if (!walletConnected) {
       return (
@@ -165,6 +254,11 @@ export default function Home() {
     );
   };
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setEventId(eId);
+  };
+
   return (
     <div className={styles.body}>
       <Head>
@@ -172,28 +266,9 @@ export default function Home() {
         <meta name="description" content="Celeb-NFTs" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <nav className={styles.navMenu}>
-        <div className={styles.navTitle}>{celebNameEvent}</div>
-      </nav>
-      <div className={styles.main}>
-        <div>
-          <h1 className={styles.title}>
-            Welcome to {celebNameEvent} NFT collection!
-          </h1>
-          <div className={styles.description}>
-            Congratulations!! you have successfully completed the tasks, so as
-            for the reward you get to mint this NFT and enjoy the benifits
-          </div>
-          <div className={styles.description}>
-            {tokenIdsMinted} people have been minted this NFT so far!!
-          </div>
-          {renderButton()}
-        </div>
-        {/* <div>
-          <img className={styles.image} src="./LW3punks/1.png" />
-        </div> */}
-      </div>
-
+      {contentForm()}
+      {contentBody()}
+      {contentErrorBody()}
       {/* <h1>CRUD Applications</h1>
       <div className={styles.form}>
         <label>Movie Name:</label>
